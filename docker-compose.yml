@@ -1,0 +1,90 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ai_backend
+      POSTGRES_USER: ai_backend_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_backend_user -d ai_backend"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  litellm_db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: litellm
+      POSTGRES_USER: litellm
+      POSTGRES_PASSWORD: ${LITELLM_POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - litellm_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm -d litellm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    restart: unless-stopped
+    depends_on:
+      litellm_db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://litellm:${LITELLM_POSTGRES_PASSWORD:-changeme}@litellm_db:5432/litellm
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml
+    command: ["--config=/app/config.yaml", "--port", "4000"]
+    ports:
+      - "4000:4000" # optional to expose on host — mainly for your own debugging/UI access
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:4000/health/liveliness')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      litellm:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://ai_backend_user:${POSTGRES_PASSWORD:-changeme}@postgres:5432/ai_backend
+      REDIS_URL: redis://redis:6379
+      LITELLM_BASE_URL: http://litellm:4000 # talk to litellm over the docker network, not localhost
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+
+volumes:
+  pg_data:
+  redis_data:
+  litellm_pg_data:

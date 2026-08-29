@@ -1,0 +1,32 @@
+{
+  "name": "ai-backend",
+  "version": "2.0.0",
+  "description": "Production AI backend: Postgres + Redis, RBAC, API keys, refresh token rotation, audit logs, vision, streaming, billing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test tests/",
+    "migrate": "node db/migrate.js",
+    "setup-admin": "node setup-admin.js",
+    "backup": "node scripts/backup-db.js",
+    "restore": "node scripts/restore-db.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.13.0",
+    "ioredis": "^5.4.1",
+    "rate-limit-redis": "^4.2.0",
+    "zod": "^3.23.8",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^2.7.0",
+    "express-rate-limit": "^7.4.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "stripe": "^16.12.0",
+    "winston": "^3.14.2",
+    "nodemailer": "^6.9.15"
+  }
+}

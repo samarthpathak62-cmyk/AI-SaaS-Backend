@@ -1,0 +1,52 @@
+# LiteLLM proxy config.
+#
+# model_name here MUST match the `id` field of models in ../config/models.js exactly —
+# that's how the ai-backend gateway (routes/gateway.js) tells LiteLLM which model to use.
+# litellm_params.model is LiteLLM's own "<provider>/<real-model-name>" syntax, and
+# api_key is read from environment variables (the same .env file the backend uses).
+
+model_list:
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: claude-sonnet-4-6
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: anthropic/claude-haiku-4-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  - model_name: gemini-1.5-pro
+    litellm_params:
+      model: gemini/gemini-1.5-pro
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-1.5-flash
+    litellm_params:
+      model: gemini/gemini-1.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: llama-3.3-70b-versatile
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY
+
+  - model_name: openrouter/auto
+    litellm_params:
+      model: openrouter/auto
+      api_key: os.environ/OPENROUTER_API_KEY
+
+# LiteLLM's own auth — the backend sends this as "Authorization: Bearer <LITELLM_MASTER_KEY>".
+# Set the real value in .env, never commit it here.
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

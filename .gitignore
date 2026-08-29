@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.local
+logs/*.log
+backups/*.sql
+backups/*.dump
+npm-debug.log*
+.DS_Store
+coverage/
